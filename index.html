@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mobil Liste</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #74ebd5, #acb6e5);
+    margin: 0;
+    padding: 15px;
+}
+
+.container {
+    background: white;
+    padding: 15px;
+    border-radius: 15px;
+    max-width: 500px;
+    margin: auto;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+h2 {
+    text-align: center;
+}
+
+/* Input */
+.input-group {
+    display: flex;
+    gap: 8px;
+}
+
+input {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+}
+
+button {
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.add-btn {
+    background: #4CAF50;
+    color: white;
+}
+
+/* LISTE */
+.list {
+    margin-top: 20px;
+}
+
+/* Kort (i stedet for tabel) */
+.item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f9f9f9;
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    transition: 0.2s;
+}
+
+.item.active {
+    background: #d4edda;
+}
+
+.text {
+    flex: 1;
+    word-break: break-word;
+}
+
+/* Knapper */
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.delete-btn {
+    background: #ff4d4d;
+    color: white;
+}
+
+/* Checkbox større */
+input[type="checkbox"] {
+    transform: scale(1.4);
+}
+
+/* Desktop fallback (tabel hvis bred skærm) */
+@media (min-width: 600px) {
+    .item {
+        border-radius: 8px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>Min Liste</h2>
+
+    <div class="input-group">
+        <input type="text" id="tekstInput" placeholder="Skriv noget...">
+        <button class="add-btn" onclick="tilfoej()">+</button>
+    </div>
+
+    <div id="liste" class="list"></div>
+</div>
+
+<script>
+let data = JSON.parse(localStorage.getItem("listeData")) || [];
+
+function gem() {
+    localStorage.setItem("listeData", JSON.stringify(data));
+}
+
+function tilfoej(tekst = "", checked = false) {
+    let input = tekst || document.getElementById("tekstInput").value;
+    if (!input) return;
+
+    let liste = document.getElementById("liste");
+
+    let item = document.createElement("div");
+    item.className = "item";
+    if (checked) item.classList.add("active");
+
+    let text = document.createElement("div");
+    text.className = "text";
+    text.innerText = input;
+
+    let actions = document.createElement("div");
+    actions.className = "actions";
+
+    let checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = checked;
+
+    checkbox.onchange = () => {
+        item.classList.toggle("active");
+        opdater();
+    };
+
+    let del = document.createElement("button");
+    del.innerText = "🗑";
+    del.className = "delete-btn";
+
+    del.onclick = () => {
+        item.remove();
+        opdater();
+    };
+
+    actions.appendChild(checkbox);
+    actions.appendChild(del);
+
+    item.appendChild(text);
+    item.appendChild(actions);
+
+    liste.appendChild(item);
+
+    if (!tekst) {
+        data.push({ tekst: input, checked: false });
+        gem();
+        document.getElementById("tekstInput").value = "";
+    }
+}
+
+function opdater() {
+    let items = document.querySelectorAll(".item");
+    data = [];
+
+    items.forEach(item => {
+        let tekst = item.querySelector(".text").innerText;
+        let checked = item.querySelector("input").checked;
+        data.push({ tekst, checked });
+    });
+
+    gem();
+}
+
+function load() {
+    data.forEach(d => tilfoej(d.tekst, d.checked));
+}
+
+load();
+</script>
+
+</body>
+</html>
